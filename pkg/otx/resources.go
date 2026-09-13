@@ -47,15 +47,18 @@ type OTXResponse struct {
 }
 
 func (p Pulse) GetIndicators() []Indicator {
-	indicators := make([]Indicator, len(p.Indicators))
+	indicators := make([]Indicator, 0, len(p.Indicators))
+
 	for _, indicator := range p.Indicators {
+		if indicator.ID == 0 {
+			continue
+		}
+
 		indicator.PulseID = p.ID
 		indicator.PulseName = p.Name
+
 		indicators = append(indicators, indicator)
 	}
 
 	return indicators
 }
-
-
-// Implement a func that takes in pulse chan and emits indicators to a chan using GetIndicators (Normalised)

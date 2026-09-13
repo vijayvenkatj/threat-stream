@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"time"
 )
@@ -15,14 +16,14 @@ type Poller struct {
 	Cfg    Config
 	Client *Client
 
-	OutputChan chan Pulse
+	Publisher *Publisher
 }
 
-func NewPoller(cfg Config, client *Client, outputChan chan Pulse) *Poller {
+func NewPoller(cfg Config, client *Client, publisher *Publisher) *Poller {
 	return &Poller{
-		Cfg:        cfg,
-		Client:     client,
-		OutputChan: outputChan,
+		Cfg:       cfg,
+		Client:    client,
+		Publisher: publisher,
 	}
 }
 
@@ -83,7 +84,20 @@ func (p *Poller) Poll(ctx context.Context) error {
 				p.Cfg.ModifiedSince = modified
 			}
 
-			p.OutputChan <- result
+			pubErr := p.Publisher.PublishPulse(ctx, p.Cfg.PulseTopic, result)
+			if pubErr != nil {
+				log.Println("error publishing result", result.ID, pubErr)
+			}
+
+			indicators := result.GetIndicators()
+			for _, indicator := range indicators {
+				pubErr := p.Publisher.PublishIndicator(ctx, p.Cfg.IndicatorTopic, indicator)
+				if pubErr != nil {
+					log.Println("error publishing indicators", indicator.ID, pubErr)
+				}
+
+				log.Println(indicator)
+			}
 		}
 
 		if response.Next == nil || *response.Next == "" {

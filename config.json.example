@@ -1,0 +1,7 @@
+{
+  "api_key": "otxkey",
+  "base_url": "https://otx.alienvault.com/api/v1/pulses/subscribed",
+  "modified_since": "2026-09-10T00:00:00Z",
+  "pulse_topic": "otx.pulses",
+  "indicator_topic": "otx.indicators"
+}

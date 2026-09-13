@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -18,17 +17,13 @@ func main() {
 		return
 	}
 
+	ctx := context.Background()
+
 	httpClient := &http.Client{Timeout: 5 * time.Minute}
 	client := otx.NewClient(cfg, httpClient)
 
-	outputChan := make(chan otx.Pulse)
-	poller := otx.NewPoller(cfg, client, outputChan)
+	publisher := otx.NewPublisher(ctx, "localhost:9092", []string{cfg.PulseTopic, cfg.IndicatorTopic})
+	poller := otx.NewPoller(cfg, client, publisher)
 
-	go func() {
-		for result := range outputChan {
-			fmt.Println(result.Name)
-		}
-	}()
-
-	poller.Run(context.Background())
+	poller.Run(ctx)
 }

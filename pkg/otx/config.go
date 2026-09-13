@@ -18,6 +18,9 @@ type Config struct {
 
 	InitialBackoff time.Duration `json:"initial_backoff"`
 	MaxBackoff     time.Duration `json:"max_backoff"`
+
+	PulseTopic     string `json:"pulse_topic"`
+	IndicatorTopic string `json:"indicator_topic"`
 }
 
 func ParseConfig(raw json.RawMessage) (Config, error) {
@@ -41,6 +44,13 @@ func ParseConfig(raw json.RawMessage) (Config, error) {
 	}
 	if cfg.MaxBackoff == 0 {
 		cfg.MaxBackoff = 1 * time.Hour
+	}
+
+	if cfg.PulseTopic == "" {
+		cfg.PulseTopic = "otx.pulses"
+	}
+	if cfg.IndicatorTopic == "" {
+		cfg.IndicatorTopic = "otx.indicators"
 	}
 
 	return cfg, nil
