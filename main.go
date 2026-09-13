@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,7 +12,7 @@ import (
 
 func main() {
 
-	cfg, err := otx.ParseConfig(json.RawMessage(`{"api_key": "hehehe","modified_since": "2026-09-10T00:00:00Z"}`))
+	cfg, err := otx.LoadConfig("config.json")
 	if err != nil {
 		log.Print(err)
 		return
@@ -32,5 +31,4 @@ func main() {
 	}()
 
 	poller.Run(context.Background())
-
 }

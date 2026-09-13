@@ -2,6 +2,7 @@ package otx
 
 import (
 	"encoding/json"
+	"os"
 	"time"
 )
 
@@ -40,6 +41,20 @@ func ParseConfig(raw json.RawMessage) (Config, error) {
 	}
 	if cfg.MaxBackoff == 0 {
 		cfg.MaxBackoff = 1 * time.Hour
+	}
+
+	return cfg, nil
+}
+
+func LoadConfig(path string) (Config, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Config{}, err
+	}
+
+	cfg, err := ParseConfig(data)
+	if err != nil {
+		return Config{}, err
 	}
 
 	return cfg, nil
