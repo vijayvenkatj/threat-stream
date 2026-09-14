@@ -1,5 +1,10 @@
 package otx
 
+import (
+	"maps"
+	"slices"
+)
+
 type Indicator struct {
 	ID          int64   `json:"id"`
 	Indicator   string  `json:"indicator"`
@@ -47,7 +52,7 @@ type OTXResponse struct {
 }
 
 func (p Pulse) GetIndicators() []Indicator {
-	indicators := make([]Indicator, 0, len(p.Indicators))
+	indicators := make(map[int64]Indicator)
 
 	for _, indicator := range p.Indicators {
 		if indicator.ID == 0 {
@@ -57,8 +62,8 @@ func (p Pulse) GetIndicators() []Indicator {
 		indicator.PulseID = p.ID
 		indicator.PulseName = p.Name
 
-		indicators = append(indicators, indicator)
+		indicators[indicator.ID] = indicator
 	}
 
-	return indicators
+	return slices.Collect(maps.Values(indicators))
 }
