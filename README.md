@@ -23,13 +23,22 @@ Go poller
 
 ```text
 .
-├── main.go
-├── pkg/otx/
-│   ├── client.go          # OTX HTTP client
-│   ├── config.go          # Configuration
-│   ├── kafka.go           # Kafka publisher
-│   ├── poller.go          # Polling and pagination loop
-│   └── resources.go       # OTX response and event models
+├── cmd/
+│   ├── ingestion/
+│   │   └── main.go        # OTX poller entrypoint
+│   └── server/
+│       └── main.go        # HTTP server entrypoint
+├── pkg/
+│   ├── otx/
+│   │   ├── client.go          # OTX HTTP client
+│   │   ├── config.go          # Configuration
+│   │   ├── kafka.go           # Kafka publisher
+│   │   ├── poller.go          # Polling and pagination loop
+│   │   └── resources.go       # OTX response and event models
+│   └── http/
+│       ├── config.go          # Server configuration (godotenv)
+│       ├── router.go          # Router (DI'd controllers)
+│       └── controllers/       # HTTP handlers
 ├── setup/
 │   ├── docker-compose.yml
 │   ├── startup.sh         # HDFS dir init + connector registration
@@ -71,7 +80,13 @@ Go poller
 4. Run the poller:
 
    ```bash
-   go run .
+   go run ./cmd/ingestion
+   ```
+
+   Run the HTTP server (optional, separate process):
+
+   ```bash
+   go run ./cmd/server
    ```
 
 5. Run the Spark transform job:
@@ -99,6 +114,8 @@ Go poller
 | `max_backoff` | `1h` | Max retry delay |
 | `pulse_topic` | `otx.pulses` | Kafka topic for pulses |
 | `indicator_topic` | `otx.indicators` | Kafka topic for indicators |
+
+`cmd/server` reads `PORT` from the environment (or a `.env` file), defaulting to `8080`.
 
 ## Kafka listeners
 
