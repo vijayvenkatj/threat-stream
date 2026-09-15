@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	httppkg "github.com/vijayvenkatj/threat-stream/pkg/http"
+	"github.com/vijayvenkatj/threat-stream/pkg/http/controllers"
 	"github.com/vijayvenkatj/threat-stream/pkg/otx"
 )
 
@@ -16,6 +18,12 @@ func main() {
 		log.Print(err)
 		return
 	}
+
+	httpCfg := httppkg.LoadConfig()
+	router := httppkg.NewRouter(controllers.NewHealthController())
+	go func() {
+		log.Fatal(http.ListenAndServe(":"+httpCfg.Port, router))
+	}()
 
 	ctx := context.Background()
 
