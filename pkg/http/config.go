@@ -8,15 +8,28 @@ import (
 
 type Config struct {
 	Port string
+
+	HDFSURL  string
+	HDFSUser string
+	// HDFSDataAddr is the host:port to rewrite WebHDFS DataNode redirects to.
+	// Leave unset when the server runs inside the compose network.
+	HDFSDataAddr string
 }
 
 func LoadConfig() Config {
 	godotenv.Load()
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	return Config{
+		Port:         env("PORT", "8080"),
+		HDFSURL:      env("HDFS_URL", "http://localhost:9870"),
+		HDFSUser:     env("HDFS_USER", "root"),
+		HDFSDataAddr: env("HDFS_DATA_ADDR", ""),
 	}
+}
 
-	return Config{Port: port}
+func env(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }

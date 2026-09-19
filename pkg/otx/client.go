@@ -21,14 +21,20 @@ func NewClient(cfg Config, httpClient *http.Client) *Client {
 	}
 }
 
-func (c *Client) Get(ctx context.Context, endpoint string) ([]byte, error) {
+// Do performs an authenticated GET and returns the raw response for the
+// caller to relay — status included, body unread. The caller closes it.
+func (c *Client) Do(ctx context.Context, endpoint string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set(apiKeyHeader, c.APIKey)
 
-	resp, err := c.httpClient.Do(req)
+	return c.httpClient.Do(req)
+}
+
+func (c *Client) Get(ctx context.Context, endpoint string) ([]byte, error) {
+	resp, err := c.Do(ctx, endpoint)
 	if err != nil {
 		return nil, err
 	}
