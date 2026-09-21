@@ -16,20 +16,20 @@ export function CopyButton({ text, label = 'Copy', className = '' }) {
     <button
       onClick={handleCopy}
       title="Copy to clipboard"
-      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-mono transition-all duration-200 border ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono font-medium transition-all duration-200 border shadow-sm ${
         copied
-          ? 'bg-emerald-950 text-emerald-400 border-emerald-500/50'
-          : 'bg-cyber-800 text-slate-400 border-slate-700/60 hover:text-cyan-400 hover:border-cyan-500/50 hover:bg-cyber-750'
+          ? 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold'
+          : 'bg-white text-slate-700 border-slate-300 hover:text-cyan-800 hover:border-cyan-400 hover:bg-cyan-50'
       } ${className}`}
     >
       {copied ? (
         <>
-          <Check className="w-3.5 h-3.5 text-emerald-400" />
+          <Check className="w-3.5 h-3.5 text-emerald-700 stroke-[2.5]" />
           <span>Copied!</span>
         </>
       ) : (
         <>
-          <Copy className="w-3.5 h-3.5" />
+          <Copy className="w-3.5 h-3.5 text-slate-500" />
           {label && <span>{label}</span>}
         </>
       )}

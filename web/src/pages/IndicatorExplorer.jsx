@@ -88,27 +88,27 @@ export function IndicatorExplorer() {
       <Breadcrumbs items={[{ label: 'Indicator Explorer' }]} />
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-300">
         <div>
-          <h1 className="text-2xl font-bold font-mono text-slate-100 flex items-center gap-2">
-            <Key className="w-6 h-6 text-cyan-400" />
+          <h1 className="text-2xl font-bold font-mono text-slate-900 flex items-center gap-2">
+            <Key className="w-6 h-6 text-cyan-700" />
             <span>Indicator Explorer (IOCs)</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 mt-1 font-medium">
             Explore IPv4, IPv6, Domains, URLs, File Hashes, and Emails harvested from OTX.
           </p>
         </div>
-        <div className="font-mono text-xs text-slate-400 bg-cyber-850 px-3 py-1.5 rounded-lg border border-slate-800">
-          Total Indicators: <span className="text-cyan-400 font-bold">{total}</span>
+        <div className="font-mono text-xs text-slate-800 bg-white px-3.5 py-1.5 rounded-lg border border-slate-300 shadow-sm font-bold">
+          Total Indicators: <span className="text-cyan-800 font-extrabold">{total}</span>
         </div>
       </div>
 
       {/* Filter Toolbar */}
-      <div className="bg-cyber-850/80 border border-slate-800 rounded-xl p-4 space-y-4">
+      <div className="bg-white border border-slate-300 rounded-xl p-4 shadow-cyber-card space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* Search Input */}
           <div className="lg:col-span-2 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
             <input
               type="text"
               placeholder="Search indicator value, title, content..."
@@ -117,11 +117,11 @@ export function IndicatorExplorer() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="w-full pl-9 pr-4 py-2 bg-cyber-900 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-400 rounded-lg text-xs font-mono text-slate-900 font-semibold placeholder-slate-500 focus:outline-none focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100 shadow-sm"
             />
           </div>
 
-          {/* Indicator Type Filter (Derived dynamically) */}
+          {/* Indicator Type Filter */}
           <div className="relative">
             <select
               value={typeFilter}
@@ -129,7 +129,7 @@ export function IndicatorExplorer() {
                 setTypeFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 bg-cyber-900 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500 appearance-none"
+              className="w-full px-3 py-2 bg-white border border-slate-400 rounded-lg text-xs font-mono text-slate-900 font-bold focus:outline-none focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100 appearance-none shadow-sm"
             >
               <option value="">All IOC Types</option>
               {availableTypes.map((t) => (
@@ -138,7 +138,7 @@ export function IndicatorExplorer() {
                 </option>
               ))}
             </select>
-            <Filter className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-3 pointer-events-none" />
+            <Filter className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-3 pointer-events-none" />
           </div>
 
           {/* Active / Inactive Status Filter */}
@@ -149,13 +149,13 @@ export function IndicatorExplorer() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 bg-cyber-900 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500 appearance-none"
+              className="w-full px-3 py-2 bg-white border border-slate-400 rounded-lg text-xs font-mono text-slate-900 font-bold focus:outline-none focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100 appearance-none shadow-sm"
             >
               <option value="">All Statuses</option>
               <option value="active">Active Only</option>
               <option value="inactive">Inactive / Expired</option>
             </select>
-            <Shield className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-3 pointer-events-none" />
+            <Shield className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-3 pointer-events-none" />
           </div>
 
           {/* Sort Order */}
@@ -163,38 +163,38 @@ export function IndicatorExplorer() {
             <select
               value={order}
               onChange={(e) => setOrder(e.target.value)}
-              className="w-full px-3 py-2 bg-cyber-900 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500 appearance-none"
+              className="w-full px-3 py-2 bg-white border border-slate-400 rounded-lg text-xs font-mono text-slate-900 font-bold focus:outline-none focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100 appearance-none shadow-sm"
             >
               <option value="desc">Sort: Newest First</option>
               <option value="asc">Sort: Oldest First</option>
             </select>
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-3 pointer-events-none" />
+            <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-3 pointer-events-none" />
           </div>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-950/50 border border-rose-800 text-rose-300 text-sm font-mono">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 text-sm font-mono shadow-sm">
           {error}
         </div>
       )}
 
       {/* Main IOC Table */}
-      <div className="bg-cyber-850/60 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-white border border-slate-300 rounded-xl shadow-cyber-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider bg-cyber-900/80">
+              <tr className="border-b border-slate-300 text-slate-700 font-bold uppercase tracking-wider bg-slate-100">
                 <th className="py-3.5 px-4">Indicator Value</th>
                 <th className="py-3.5 px-4">Type</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-4">Title / Summary</th>
                 <th className="py-3.5 px-4">Pulse Name</th>
                 <th className="py-3.5 px-4">Created</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 text-right"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300">
+            <tbody className="divide-y divide-slate-200 text-slate-800 font-medium">
               {loading ? (
                 <>
                   <SkeletonTableRow cols={7} />
@@ -214,12 +214,12 @@ export function IndicatorExplorer() {
                 </tr>
               ) : (
                 indicators.map((ind) => (
-                  <tr key={ind.id} className="hover:bg-cyber-800/50 transition-colors">
+                  <tr key={ind.id} className="hover:bg-cyan-50/50 transition-colors">
                     {/* Indicator Monospace Prominent Value */}
-                    <td className="py-3.5 px-4 font-mono font-semibold text-slate-100 max-w-xs truncate">
+                    <td className="py-3.5 px-4 font-mono font-extrabold text-slate-900 max-w-xs truncate text-sm">
                       <Link
                         to={`/indicators/${ind.id}`}
-                        className="hover:text-cyan-400 transition-colors glow-cyan tracking-tight"
+                        className="hover:text-cyan-800 transition-colors tracking-tight"
                         title={ind.indicator}
                       >
                         {ind.indicator}
@@ -237,19 +237,19 @@ export function IndicatorExplorer() {
                     </td>
 
                     {/* Title / Description */}
-                    <td className="py-3.5 px-4 text-slate-300 max-w-xs truncate">
+                    <td className="py-3.5 px-4 text-slate-700 font-medium max-w-xs truncate">
                       {ind.title || ind.description || 'No summary'}
                     </td>
 
                     {/* Pulse Name Link */}
-                    <td className="py-3.5 px-4 text-slate-400 max-w-xs truncate">
-                      <Link to={`/pulses/${ind.PulseID}`} className="hover:text-cyan-400 underline">
+                    <td className="py-3.5 px-4 text-slate-700 font-semibold max-w-xs truncate">
+                      <Link to={`/pulses/${ind.PulseID}`} className="hover:text-cyan-800 underline">
                         {ind.PulseName || ind.PulseID}
                       </Link>
                     </td>
 
                     {/* Created Date */}
-                    <td className="py-3.5 px-4 text-slate-400">
+                    <td className="py-3.5 px-4 text-slate-600 font-medium">
                       {new Date(ind.created).toLocaleDateString()}
                     </td>
 
@@ -265,7 +265,7 @@ export function IndicatorExplorer() {
         </div>
 
         {/* Pagination */}
-        <div className="p-2 border-t border-slate-800">
+        <div className="p-2 border-t border-slate-200">
           <Pagination
             page={page}
             totalPages={totalPages}

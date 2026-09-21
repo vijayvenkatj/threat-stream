@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Radio, Search, Filter, ArrowUpDown, ChevronRight, Globe, Shield, Tag } from 'lucide-react';
+import { Radio, Search, Filter, ArrowUpDown, ChevronRight, Shield, Tag } from 'lucide-react';
 import { getPulses } from '../api/pulses';
 import { TlpBadge, AdversaryBadge } from '../components/common/Badge';
 import { Pagination } from '../components/common/Pagination';
@@ -75,27 +75,27 @@ export function PulseExplorer() {
       <Breadcrumbs items={[{ label: 'Pulse Explorer' }]} />
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-300">
         <div>
-          <h1 className="text-2xl font-bold font-mono text-slate-100 flex items-center gap-2">
-            <Radio className="w-6 h-6 text-cyan-400" />
+          <h1 className="text-2xl font-bold font-mono text-slate-900 flex items-center gap-2">
+            <Radio className="w-6 h-6 text-cyan-700" />
             <span>Threat Pulse Explorer</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 mt-1 font-medium">
             Browse, search, and analyze raw CTI threat pulses subscribed from AlienVault OTX.
           </p>
         </div>
-        <div className="font-mono text-xs text-slate-400 bg-cyber-850 px-3 py-1.5 rounded-lg border border-slate-800">
-          Total Pulses: <span className="text-cyan-400 font-bold">{total}</span>
+        <div className="font-mono text-xs text-slate-800 bg-white px-3.5 py-1.5 rounded-lg border border-slate-300 shadow-sm font-bold">
+          Total Pulses: <span className="text-cyan-800 font-extrabold">{total}</span>
         </div>
       </div>
 
       {/* Filter Toolbar */}
-      <div className="bg-cyber-850/80 border border-slate-800 rounded-xl p-4 space-y-4">
+      <div className="bg-white border border-slate-300 rounded-xl p-4 shadow-cyber-card space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* Search Input */}
           <div className="lg:col-span-2 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
             <input
               type="text"
               placeholder="Search pulse name, description, adversary..."
@@ -104,7 +104,7 @@ export function PulseExplorer() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="w-full pl-9 pr-4 py-2 bg-cyber-900 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-400 rounded-lg text-xs font-mono text-slate-900 font-semibold placeholder-slate-500 focus:outline-none focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100 transition-colors shadow-sm"
             />
           </div>
 
@@ -116,7 +116,7 @@ export function PulseExplorer() {
                 setTlpFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 bg-cyber-900 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500 appearance-none"
+              className="w-full px-3 py-2 bg-white border border-slate-400 rounded-lg text-xs font-mono text-slate-900 font-bold focus:outline-none focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100 appearance-none shadow-sm"
             >
               <option value="">All TLP Levels</option>
               <option value="white">TLP:WHITE</option>
@@ -124,7 +124,7 @@ export function PulseExplorer() {
               <option value="amber">TLP:AMBER</option>
               <option value="red">TLP:RED</option>
             </select>
-            <Filter className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-3 pointer-events-none" />
+            <Filter className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-3 pointer-events-none" />
           </div>
 
           {/* Sort Field */}
@@ -135,14 +135,14 @@ export function PulseExplorer() {
                 setSortBy(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 bg-cyber-900 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500 appearance-none"
+              className="w-full px-3 py-2 bg-white border border-slate-400 rounded-lg text-xs font-mono text-slate-900 font-bold focus:outline-none focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100 appearance-none shadow-sm"
             >
               <option value="created">Sort: Created Date</option>
               <option value="modified">Sort: Modified Date</option>
               <option value="indicators">Sort: IOC Count</option>
               <option value="name">Sort: Pulse Name</option>
             </select>
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-3 pointer-events-none" />
+            <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-3 pointer-events-none" />
           </div>
 
           {/* Sort Order */}
@@ -150,7 +150,7 @@ export function PulseExplorer() {
             <select
               value={order}
               onChange={(e) => setOrder(e.target.value)}
-              className="w-full px-3 py-2 bg-cyber-900 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500 appearance-none"
+              className="w-full px-3 py-2 bg-white border border-slate-400 rounded-lg text-xs font-mono text-slate-900 font-bold focus:outline-none focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100 appearance-none shadow-sm"
             >
               <option value="desc">Order: Descending</option>
               <option value="asc">Order: Ascending</option>
@@ -160,10 +160,10 @@ export function PulseExplorer() {
 
         {/* Active Tag Filter Warning */}
         {tagFilter && (
-          <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 bg-cyan-950/40 px-3 py-1.5 rounded border border-cyan-800/50">
-            <Tag className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2 text-xs font-mono text-cyan-900 bg-cyan-100 px-3 py-1.5 rounded-lg border border-cyan-300 font-bold shadow-sm">
+            <Tag className="w-3.5 h-3.5 text-cyan-700" />
             <span>Filtering by Tag: #{tagFilter}</span>
-            <button onClick={() => setTagFilter('')} className="ml-auto underline text-slate-400 hover:text-slate-200">
+            <button onClick={() => setTagFilter('')} className="ml-auto underline text-slate-700 hover:text-slate-950 font-bold">
               Clear Tag
             </button>
           </div>
@@ -171,7 +171,7 @@ export function PulseExplorer() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-950/50 border border-rose-800 text-rose-300 text-sm font-mono">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 text-sm font-mono shadow-sm">
           {error}
         </div>
       )}
@@ -196,26 +196,26 @@ export function PulseExplorer() {
             <Link
               key={pulse.id}
               to={`/pulses/${pulse.id}`}
-              className="bg-cyber-850/80 border border-slate-800 hover:border-cyan-500/50 rounded-xl p-5 transition-all duration-200 group flex flex-col justify-between hover:shadow-cyber-glow"
+              className="bg-white border border-slate-300 hover:border-cyan-500 rounded-xl p-5 transition-all duration-200 group flex flex-col justify-between shadow-cyber-card hover:shadow-cyber-hover"
             >
               <div>
                 {/* Header Row */}
                 <div className="flex items-start justify-between gap-3 mb-2">
-                  <h3 className="font-sans font-bold text-slate-100 group-hover:text-cyan-400 transition-colors line-clamp-1">
+                  <h3 className="font-sans font-bold text-slate-900 group-hover:text-cyan-800 transition-colors line-clamp-1 text-base">
                     {pulse.name}
                   </h3>
                   <TlpBadge tlp={pulse.tlp} />
                 </div>
 
                 {/* Description */}
-                <p className="text-xs text-slate-400 line-clamp-2 mb-4 leading-relaxed font-sans">
+                <p className="text-xs text-slate-600 line-clamp-2 mb-4 leading-relaxed font-sans font-medium">
                   {pulse.description || 'No description provided.'}
                 </p>
 
                 {/* Adversary & Metadata */}
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <AdversaryBadge name={pulse.adversary} />
-                  <span className="text-[11px] font-mono text-slate-400 bg-cyber-900 px-2 py-0.5 rounded border border-slate-800">
+                  <span className="text-[11px] font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-300 font-semibold">
                     Author: {pulse.author_name}
                   </span>
                 </div>
@@ -224,12 +224,12 @@ export function PulseExplorer() {
                 {pulse.tags && pulse.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-4">
                     {pulse.tags.slice(0, 4).map((t) => (
-                      <span key={t} className="text-[10px] font-mono text-slate-400 bg-cyber-900/80 px-2 py-0.5 rounded border border-slate-800/80">
+                      <span key={t} className="text-[10px] font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-300 font-medium">
                         #{t}
                       </span>
                     ))}
                     {pulse.tags.length > 4 && (
-                      <span className="text-[10px] font-mono text-slate-500">
+                      <span className="text-[10px] font-mono text-slate-500 font-bold">
                         +{pulse.tags.length - 4} more
                       </span>
                     )}
@@ -238,15 +238,15 @@ export function PulseExplorer() {
               </div>
 
               {/* Bottom Info Bar */}
-              <div className="flex items-center justify-between pt-3 border-t border-slate-800/80 text-xs font-mono text-slate-400">
+              <div className="flex items-center justify-between pt-3 border-t border-slate-200 text-xs font-mono text-slate-600">
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center gap-1 text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/50">
-                    <Shield className="w-3.5 h-3.5" />
+                  <span className="inline-flex items-center gap-1 text-cyan-900 bg-cyan-100 px-2.5 py-0.5 rounded border border-cyan-300 font-bold">
+                    <Shield className="w-3.5 h-3.5 text-cyan-700" />
                     {pulse.indicators ? pulse.indicators.length : 0} IOCs
                   </span>
-                  <span>{new Date(pulse.created).toLocaleDateString()}</span>
+                  <span className="font-medium">{new Date(pulse.created).toLocaleDateString()}</span>
                 </div>
-                <div className="flex items-center gap-1 text-cyan-400 group-hover:translate-x-0.5 transition-transform">
+                <div className="flex items-center gap-1 text-cyan-800 font-bold group-hover:translate-x-0.5 transition-transform">
                   <span>View Details</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>

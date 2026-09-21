@@ -1,7 +1,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-const COLORS = ['#06b6d4', '#10b981', '#a855f7', '#f59e0b', '#f43f5e', '#6366f1'];
+const COLORS = ['#0891B2', '#0F766E', '#047857', '#1D4ED8', '#6D28D9', '#B45309', '#B91C1C'];
 
 export function IndicatorTypeChart({ data = {} }) {
   const chartData = Object.entries(data).map(([name, value]) => ({
@@ -27,24 +27,25 @@ export function IndicatorTypeChart({ data = {} }) {
             dataKey="value"
           >
             {chartData.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="#0b0f19" strokeWidth={2} />
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="#ffffff" strokeWidth={2} />
             ))}
           </Pie>
           <Tooltip
             contentStyle={{
-              backgroundColor: '#111726',
-              borderColor: '#1e293b',
+              backgroundColor: '#0F172A',
+              borderColor: '#334155',
               borderRadius: '8px',
-              color: '#f8fafc',
+              color: '#F8FAFC',
               fontFamily: 'monospace',
               fontSize: '12px',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
             }}
           />
           <Legend
             verticalAlign="bottom"
             height={36}
             iconType="circle"
-            formatter={(value) => <span className="text-xs text-slate-300 font-mono">{value}</span>}
+            formatter={(value) => <span className="text-xs text-slate-800 font-mono font-bold">{value}</span>}
           />
         </PieChart>
       </ResponsiveContainer>

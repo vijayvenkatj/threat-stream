@@ -11,7 +11,7 @@ import { IndicatorDetails } from './pages/IndicatorDetails';
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex flex-col bg-cyber-900 text-slate-100 bg-cyber-grid">
+      <div className="min-h-screen flex flex-col bg-white text-slate-900 bg-cyber-grid">
         <Navbar />
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>

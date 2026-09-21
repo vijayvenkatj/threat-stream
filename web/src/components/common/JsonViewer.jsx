@@ -15,32 +15,32 @@ export function JsonViewer({ title = 'Technical / Raw Data Payload', data }) {
   };
 
   return (
-    <div className="border border-slate-800 rounded-xl bg-cyber-850/60 overflow-hidden mt-6">
+    <div className="border border-slate-300 rounded-xl bg-white overflow-hidden shadow-sm mt-6">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-5 py-3.5 bg-cyber-800/80 hover:bg-cyber-800 transition-colors text-left"
+        className="w-full flex items-center justify-between px-5 py-3.5 bg-slate-100 hover:bg-slate-200/80 transition-colors text-left border-b border-transparent"
       >
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-300">
-          <Code className="w-4 h-4 text-cyan-400" />
+        <div className="flex items-center gap-2 text-sm font-bold font-mono text-slate-900">
+          <Code className="w-4 h-4 text-cyan-700" />
           <span>{title}</span>
         </div>
         <div className="flex items-center gap-3">
           {isOpen && (
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1 text-xs font-mono text-slate-400 hover:text-cyan-400 px-2 py-1 rounded bg-cyber-900 border border-slate-700"
+              className="flex items-center gap-1 text-xs font-mono font-medium text-slate-800 hover:text-cyan-800 px-2.5 py-1 rounded bg-white border border-slate-300 shadow-sm"
             >
-              {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-700 font-bold" /> : <Copy className="w-3.5 h-3.5 text-slate-600" />}
               {copied ? 'Copied' : 'Copy JSON'}
             </button>
           )}
-          {isOpen ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
+          {isOpen ? <ChevronDown className="w-4 h-4 text-slate-600" /> : <ChevronRight className="w-4 h-4 text-slate-600" />}
         </div>
       </button>
 
       {isOpen && (
-        <div className="p-4 bg-cyber-950 border-t border-slate-800 overflow-x-auto max-h-96">
-          <pre className="font-mono text-xs text-cyan-300 leading-relaxed">
+        <div className="p-4 bg-slate-900 border-t border-slate-300 overflow-x-auto max-h-96">
+          <pre className="font-mono text-xs text-cyan-300 leading-relaxed font-medium">
             {jsonString}
           </pre>
         </div>
