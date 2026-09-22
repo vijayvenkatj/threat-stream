@@ -1,2 +1,13 @@
 .env
+.env.local
 config.json
+
+# Node & Frontend
+node_modules/
+dist/
+web/node_modules/
+web/dist/
+
+# Logs & OS temp
+*.log
+.DS_Store
