@@ -43,6 +43,7 @@ func main() {
 		controllers.NewHealthController(),
 		controllers.NewPulsesController(cache, otxClient),
 		controllers.NewIndicatorsController(cache),
+		controllers.NewStatsController(cache),
 	)
 
 	log.Fatal(http.ListenAndServe(":"+cfg.Port, router))

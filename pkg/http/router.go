@@ -6,7 +6,7 @@ import (
 	"github.com/vijayvenkatj/threat-stream/pkg/http/controllers"
 )
 
-func NewRouter(health *controllers.HealthController, pulses *controllers.PulsesController, indicators *controllers.IndicatorsController) http.Handler {
+func NewRouter(health *controllers.HealthController, pulses *controllers.PulsesController, indicators *controllers.IndicatorsController, stats *controllers.StatsController) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", health.Health)
 
@@ -16,6 +16,13 @@ func NewRouter(health *controllers.HealthController, pulses *controllers.PulsesC
 
 	mux.HandleFunc("GET /api/indicators", indicators.List)
 	mux.HandleFunc("GET /api/indicators/{id}", indicators.Get)
+
+	mux.HandleFunc("GET /api/stats/overview", stats.Overview)
+	mux.HandleFunc("GET /api/stats/indicator-types", stats.IndicatorTypes)
+	mux.HandleFunc("GET /api/stats/malware", stats.Malware)
+	mux.HandleFunc("GET /api/stats/countries", stats.Countries)
+	mux.HandleFunc("GET /api/stats/industries", stats.Industries)
+	mux.HandleFunc("GET /api/stats/tags", stats.Tags)
 
 	return withCORS(mux)
 }
