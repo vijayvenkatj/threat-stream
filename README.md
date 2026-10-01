@@ -1,6 +1,6 @@
 # ThreatStream
 
-Ingests subscribed threat-intelligence pulses from AlienVault OTX, publishes them to Kafka, sinks raw events to HDFS, and transforms them with Spark.
+Ingests subscribed threat-intelligence pulses from AlienVault OTX, publishes them to Kafka, sinks raw events to HDFS, transforms them with Spark, and correlates threats into categorized summaries.
 
 ## Architecture
 
@@ -10,11 +10,21 @@ OTX API
    v
 Go poller
    |
-   ├── otx.pulses ──► Kafka Connect HDFS Sink ──► HDFS /data/raw/
-   |                                                      |
-   |                                               Spark job
-   |                                                      |
-   |                                             HDFS /data/processed/
+   ├── otx.pulses ──► Kafka Connect HDFS Sink ──►    HDFS /data/raw/
+   |                                                       |
+   |                                               Spark Transformation
+   |                                                       |
+   |                                              HDFS /data/processed/
+   |                                                       |
+   |                                                Spark Correlation
+   |                                                       |
+   |                                          HDFS /data/correlated/otx.threats
+   |                                                       |
+   |                                                  Spark Summary
+   |                                                       |
+   |                                          HDFS /data/correlated/otx.summary
+   |
+   |
    |
    └── otx.indicators
 ```
@@ -58,7 +68,9 @@ Go poller
 │       ├── Dockerfile
 │       ├── conf/          # core-site.xml, hdfs-site.xml
 │       └── jobs/
-│           └── transform_pulses.py
+│           ├── transform_pulses.py
+│           ├── correlate_threats.py
+│           └── correlate_summary.py
 └── config.json.example
 ```
 
@@ -101,10 +113,25 @@ Go poller
 
    ```bash
    docker compose -f setup/docker-compose.yml exec spark \
-     /opt/spark/bin/spark-submit /opt/spark/jobs/transform_pulses.py
+   /opt/spark/bin/spark-submit /opt/spark/jobs/transform_pulses.py
+   ```
+
+6. Run the Spark correlation job:
+
+   ```bash
+   docker compose -f setup/docker-compose.yml exec spark \
+   /opt/spark/bin/spark-submit /opt/spark/jobs/correlate_threats.py
+   ```
+
+7. Generate the condensed threat summary:
+
+   ```bash
+   docker compose -f setup/docker-compose.yml exec spark \
+   /opt/spark/bin/spark-submit /opt/spark/jobs/correlate_summary.py
    ```
 
 **UIs:**
+
 - Kafka UI: <http://localhost:8081>
 - HDFS NameNode: <http://localhost:9870>
 - Kafka Connect REST: <http://localhost:8083>
@@ -113,24 +140,24 @@ Go poller
 
 `config.json` is git-ignored (contains the API key).
 
-| Field | Default | Description |
-| --- | --- | --- |
-| `api_key` | required | OTX API key |
-| `base_url` | OTX subscribed-pulses API | OTX endpoint |
-| `modified_since` | `2026-09-01T00:00:00Z` | Starting timestamp |
-| `initial_backoff` | `1s` | Delay between polls |
-| `max_backoff` | `1h` | Max retry delay |
-| `pulse_topic` | `otx.pulses` | Kafka topic for pulses |
-| `indicator_topic` | `otx.indicators` | Kafka topic for indicators |
+| Field             | Default                   | Description                |
+| ----------------- | ------------------------- | -------------------------- |
+| `api_key`         | required                  | OTX API key                |
+| `base_url`        | OTX subscribed-pulses API | OTX endpoint               |
+| `modified_since`  | `2026-09-01T00:00:00Z`    | Starting timestamp         |
+| `initial_backoff` | `1s`                      | Delay between polls        |
+| `max_backoff`     | `1h`                      | Max retry delay            |
+| `pulse_topic`     | `otx.pulses`              | Kafka topic for pulses     |
+| `indicator_topic` | `otx.indicators`          | Kafka topic for indicators |
 
 `cmd/server` reads its settings from the environment (or a `.env` file — see `.env.example`).
 
-| Variable | Default | Description |
-| --- | --- | --- |
-| `PORT` | `8080` | HTTP listen port |
-| `HDFS_URL` | `http://localhost:9870` | NameNode WebHDFS root |
-| `HDFS_USER` | `root` | `user.name` sent with WebHDFS requests |
-| `HDFS_DATA_ADDR` | unset | `host:port` to rewrite DataNode redirects to. Set it to `localhost:9864` when running the server on the host; leave unset inside the compose network. |
+| Variable         | Default                 | Description                                                                                                                                           |
+| ---------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`           | `8080`                  | HTTP listen port                                                                                                                                      |
+| `HDFS_URL`       | `http://localhost:9870` | NameNode WebHDFS root                                                                                                                                 |
+| `HDFS_USER`      | `root`                  | `user.name` sent with WebHDFS requests                                                                                                                |
+| `HDFS_DATA_ADDR` | unset                   | `host:port` to rewrite DataNode redirects to. Set it to `localhost:9864` when running the server on the host; leave unset inside the compose network. |
 
 ## API
 
@@ -139,14 +166,14 @@ Go poller
 Raw pulse records straight out of `/data/raw/otx.pulses`, oldest first, exactly as the
 Kafka Connect sink wrote them.
 
-| Query param | Default | Description |
-| --- | --- | --- |
-| `limit` | `50` | Items per page, 1–200 |
-| `cursor` | — | Opaque page position; take it from a `next`/`prev` link, never build it |
+| Query param | Default | Description                                                             |
+| ----------- | ------- | ----------------------------------------------------------------------- |
+| `limit`     | `50`    | Items per page, 1–200                                                   |
+| `cursor`    | —       | Opaque page position; take it from a `next`/`prev` link, never build it |
 
 ```json
 {
-  "items": [ { "id": "…", "name": "…", "indicators": [] } ],
+  "items": [{ "id": "…", "name": "…", "indicators": [] }],
   "limit": 50,
   "next": "/api/raw/pulses?cursor=eyJrIjoi…&limit=50",
   "prev": null
@@ -165,20 +192,20 @@ Searchable, sortable, page-numbered pulse listing, served from an in-memory cach
 wins) once at startup and refreshed every minute — results can lag the feed by up to that
 long, and `GET /api/indicators/{id}` is a lookup into the same cache.
 
-| Query param | Default | Description |
-| --- | --- | --- |
-| `page` | `1` | 1-indexed |
-| `limit` | `20` | Items per page, 1–200 |
-| `search` | — | Case-insensitive substring over name, description, adversary |
-| `tlp` | — | Exact match: `WHITE`, `GREEN`, `AMBER`, or `RED` |
-| `adversary` | — | Exact match, case-insensitive |
-| `country` | — | Membership in `targeted_countries`, case-insensitive |
-| `sort` | `modified` | `modified`, `created`, or `name` |
-| `order` | `desc` | `asc` or `desc` |
+| Query param | Default    | Description                                                  |
+| ----------- | ---------- | ------------------------------------------------------------ |
+| `page`      | `1`        | 1-indexed                                                    |
+| `limit`     | `20`       | Items per page, 1–200                                        |
+| `search`    | —          | Case-insensitive substring over name, description, adversary |
+| `tlp`       | —          | Exact match: `WHITE`, `GREEN`, `AMBER`, or `RED`             |
+| `adversary` | —          | Exact match, case-insensitive                                |
+| `country`   | —          | Membership in `targeted_countries`, case-insensitive         |
+| `sort`      | `modified` | `modified`, `created`, or `name`                             |
+| `order`     | `desc`     | `asc` or `desc`                                              |
 
 ```json
 {
-  "data": [ { "id": "…", "name": "…", "tlp": "GREEN", "indicators": [] } ],
+  "data": [{ "id": "…", "name": "…", "tlp": "GREEN", "indicators": [] }],
   "page": 1,
   "limit": 20,
   "total": 100
@@ -197,20 +224,20 @@ unshaped — status code included, so a bad ID reaches the frontend as OTX's own
 
 Same shape as `/api/pulses`, over indicators flattened out of every pulse.
 
-| Query param | Default | Description |
-| --- | --- | --- |
-| `page` | `1` | 1-indexed |
-| `limit` | `20` | Items per page, 1–200 |
-| `search` | — | Case-insensitive substring over indicator, content, title |
-| `type` | — | Exact match, case-insensitive (`IPv4`, `domain`, …) |
-| `status` | — | `active` (`is_active=1`) or `inactive` (`is_active=0`) |
-| `pulse_id` | — | Exact match on the owning pulse's ID |
-| `sort` | `created` | `created` or `type` |
-| `order` | `desc` | `asc` or `desc` |
+| Query param | Default   | Description                                               |
+| ----------- | --------- | --------------------------------------------------------- |
+| `page`      | `1`       | 1-indexed                                                 |
+| `limit`     | `20`      | Items per page, 1–200                                     |
+| `search`    | —         | Case-insensitive substring over indicator, content, title |
+| `type`      | —         | Exact match, case-insensitive (`IPv4`, `domain`, …)       |
+| `status`    | —         | `active` (`is_active=1`) or `inactive` (`is_active=0`)    |
+| `pulse_id`  | —         | Exact match on the owning pulse's ID                      |
+| `sort`      | `created` | `created` or `type`                                       |
+| `order`     | `desc`    | `asc` or `desc`                                           |
 
 ```json
 {
-  "data": [ { "id": 12345, "indicator": "…", "PulseID": "…", "PulseName": "…" } ],
+  "data": [{ "id": 12345, "indicator": "…", "PulseID": "…", "PulseName": "…" }],
   "page": 1,
   "limit": 20,
   "total": 100
@@ -228,7 +255,7 @@ any `cmp.Ordered` key, and `Paginate` for the `page`/`limit`/`total` envelope.
 
 ## Kafka listeners
 
-| Listener | Address |
-| --- | --- |
-| Host | `localhost:9092` |
-| Containers | `kafka:29092` |
+| Listener   | Address          |
+| ---------- | ---------------- |
+| Host       | `localhost:9092` |
+| Containers | `kafka:29092`    |
