@@ -6,6 +6,7 @@ import { Dashboard } from './pages/Dashboard';
 import { PulseExplorer } from './pages/PulseExplorer';
 import { PulseDetails } from './pages/PulseDetails';
 import { IndicatorExplorer } from './pages/IndicatorExplorer';
+import { Correlations } from './pages/Correlations';
 import { IndicatorDetails } from './pages/IndicatorDetails';
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/pulses/:id" element={<PulseDetails />} />
             <Route path="/indicators" element={<IndicatorExplorer />} />
             <Route path="/indicators/:id" element={<IndicatorDetails />} />
+            <Route path="/correlations" element={<Correlations />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

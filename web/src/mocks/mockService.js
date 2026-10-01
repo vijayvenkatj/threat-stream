@@ -11,6 +11,35 @@ const getAllIndicators = () => {
   );
 };
 
+// Same keyword -> category idea as correlate_threats.py.
+const CATEGORY_KEYWORDS = {
+  Ransomware: 'ransom',
+  Phishing: 'phish',
+  'Credential Theft': 'credential',
+  'Cyber Espionage': 'espionage',
+  'Information Stealer': 'stealer',
+  Backdoor: 'backdoor',
+};
+
+const mockCorrelations = () =>
+  mockPulses.map((p) => {
+    const tags = (p.tags || []).join(',').toLowerCase();
+    const categories = Object.entries(CATEGORY_KEYWORDS).filter(([, k]) => tags.includes(k)).map(([name]) => name);
+    return {
+      pulse_id: p.id,
+      pulse_name: p.name,
+      created: p.created,
+      adversary: p.adversary || '',
+      categories: categories.length ? categories : ['Other'],
+      countries: p.targeted_countries || [],
+      indicator_types: [...new Set((p.indicators || []).map((i) => i.type))],
+      malware_families: p.malware_families || [],
+      tags: p.tags || [],
+      industries: p.industries || [],
+      indicator_count: (p.indicators || []).length,
+    };
+  });
+
 export const mockService = {
   // Statistics Overview
   getOverviewStats: async () => {
@@ -155,7 +184,7 @@ export const mockService = {
     const paginated = filtered.slice(start, start + limit);
 
     return {
-      data: paginated,
+      data: paginated.map((p) => ({ ...p, indicator_count: (p.indicators || []).length })),
       total,
       page,
       limit,
@@ -238,5 +267,49 @@ export const mockService = {
       throw new Error(`Indicator with ID ${id} not found`);
     }
     return indicator;
+  },
+  // Spark correlation output, derived from the mock pulses like the Spark job does.
+  getCorrelations: async ({ search = '', category = '', country = '', adversary = '', sortBy = 'indicator_count', order = 'desc', page = 1, limit = 10 } = {}) => {
+    const q = search.toLowerCase();
+    const rows = mockCorrelations()
+      .filter((r) => !q || r.pulse_name.toLowerCase().includes(q) || r.adversary.toLowerCase().includes(q))
+      .filter((r) => !category || r.categories.includes(category))
+      .filter((r) => !country || r.countries.includes(country))
+      .filter((r) => !adversary || r.adversary === adversary)
+      .sort((a, b) => {
+        const key = sortBy === 'name' ? 'pulse_name' : sortBy;
+        return (a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0) * (order === 'asc' ? 1 : -1);
+      });
+    return {
+      available: true,
+      data: rows.slice((page - 1) * limit, page * limit),
+      page,
+      limit,
+      total: rows.length,
+      total_pages: Math.ceil(rows.length / limit) || 1,
+    };
+  },
+
+  getCorrelationStats: async () => {
+    const rows = mockCorrelations();
+    const count = (items) => {
+      const m = {};
+      items.forEach((k) => (m[k] = (m[k] || 0) + 1));
+      return Object.entries(m).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    };
+    const pairs = rows.flatMap((r) => {
+      const c = r.categories.filter((x) => x !== 'Other').sort();
+      return c.flatMap((a, i) => c.slice(i + 1).map((b) => `${a} + ${b}`));
+    });
+    return {
+      available: true,
+      pulses: rows.length,
+      indicators: rows.reduce((n, r) => n + r.indicator_count, 0),
+      categories: count(rows.flatMap((r) => r.categories)),
+      adversaries: count(rows.map((r) => r.adversary).filter(Boolean)).slice(0, 5),
+      countries: count(rows.flatMap((r) => r.countries)).slice(0, 5),
+      pairs: count(pairs).slice(0, 6),
+      timeline: count(rows.map((r) => r.created.slice(0, 7))).sort((a, b) => a.name.localeCompare(b.name)),
+    };
   },
 };

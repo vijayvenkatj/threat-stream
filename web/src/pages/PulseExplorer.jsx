@@ -242,7 +242,7 @@ export function PulseExplorer() {
                 <div className="flex items-center gap-3">
                   <span className="inline-flex items-center gap-1 text-cyan-900 bg-cyan-100 px-2.5 py-0.5 rounded border border-cyan-300 font-bold">
                     <Shield className="w-3.5 h-3.5 text-cyan-700" />
-                    {pulse.indicators ? pulse.indicators.length : 0} IOCs
+                    {pulse.indicator_count ?? 0} IOCs
                   </span>
                   <span className="font-medium">{new Date(pulse.created).toLocaleDateString()}</span>
                 </div>

@@ -38,3 +38,16 @@ export async function apiFetch(endpoint, options = {}) {
 }
 
 export { mockService };
+
+// Maps UI params onto the Go server's query names and adds the total_pages the
+// list pages expect. Empty params are dropped.
+const SERVER_PARAMS = { sortBy: 'sort', pulseId: 'pulse_id' };
+
+export async function apiList(endpoint, params = {}) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== '' && value != null) query.set(SERVER_PARAMS[key] || key, value);
+  });
+  const res = await apiFetch(`${endpoint}?${query}`);
+  return { ...res, total_pages: Math.max(1, Math.ceil((res.total || 0) / (res.limit || 1))) };
+}

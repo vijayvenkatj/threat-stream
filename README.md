@@ -74,6 +74,13 @@ Go poller
 └── config.json.example
 ```
 
+## Demo walkthrough
+
+The UI follows the data through the pipeline: **Overview** (pipeline strip plus key findings),
+**Pulses** and **Indicators** (the raw feed), **Correlations** (what Spark made of it). Without
+Spark output the Correlations views show an explanatory empty state; run
+`correlate_threats.py` to light them up. `VITE_USE_MOCK_DATA=true` runs the UI with no backend.
+
 ## Local dev setup
 
 **Prerequisites:** Go 1.23+, Docker, an OTX API key.
@@ -243,6 +250,27 @@ Same shape as `/api/pulses`, over indicators flattened out of every pulse.
   "total": 100
 }
 ```
+
+### `GET /api/correlations`
+
+Page-numbered view of the Spark output (`/data/correlated/otx.threats`), served from a 30s
+in-memory snapshot so requests never wait on HDFS. Query: `page`, `limit`, `search`,
+`category`, `country`, `adversary`, `sort` (`indicator_count` | `created` | `name`), `order`.
+Spark runs by hand, so missing output is a normal state: `200` with `"available": false` and
+an empty page.
+
+```json
+{ "available": true, "data": [{ "pulse_id": "…", "pulse_name": "…", "categories": ["Ransomware"],
+  "countries": ["US"], "adversary": "APT-X", "indicator_count": 12 }], "page": 1, "limit": 10, "total": 25 }
+```
+
+### `GET /api/correlations/stats`
+
+Aggregates for the insight charts: totals, `categories`, top `adversaries` and `countries`,
+co-occurring category `pairs`, and a monthly `timeline`. Also `available: false` before Spark runs.
+
+`/api/pulses` list rows omit the embedded `indicators` array and carry `indicator_count`
+instead, and all responses are gzipped for clients that accept it.
 
 ### `GET /api/indicators/{id}`
 

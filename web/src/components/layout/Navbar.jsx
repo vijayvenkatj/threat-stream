@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Shield, Activity, Radio, Key, Layers } from 'lucide-react';
+import { Shield, Activity, Radio, Key, Layers, Network } from 'lucide-react';
 import { isUsingMockData, getApiBaseUrl } from '../../api/client';
+import { getCorrelationStats } from '../../api/correlations';
 
 export function Navbar() {
   const usingMock = isUsingMockData();
+  const [spark, setSpark] = useState(null); // null: unknown/API down
+  useEffect(() => {
+    getCorrelationStats().then((s) => setSpark(s.available ? s.pulses : 0)).catch(() => setSpark(null));
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-300 shadow-sm">
@@ -28,10 +33,9 @@ export function Navbar() {
 
             {/* Pipeline Stage Badge */}
             <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-xs font-mono text-slate-800 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-              <span className="text-slate-500 font-medium">STAGE:</span>
-              <span className="text-cyan-800 font-bold">RAW OTX</span>
-              <span className="text-slate-400 text-[10px]">[KAFKA/HDFS]</span>
+              <span className={`w-2 h-2 rounded-full ${spark ? 'bg-emerald-600 animate-pulse' : 'bg-amber-500'}`}></span>
+              <span className="text-slate-500 font-medium">SPARK:</span>
+              <span className="text-cyan-800 font-bold">{spark ? `${spark} CORRELATED` : spark === 0 ? 'NOT RUN YET' : 'OFFLINE'}</span>
             </div>
           </div>
 
@@ -49,7 +53,7 @@ export function Navbar() {
               }
             >
               <Activity className="w-4 h-4 text-cyan-600" />
-              <span>Dashboard</span>
+              <span>Overview</span>
             </NavLink>
 
             <NavLink
@@ -78,6 +82,20 @@ export function Navbar() {
             >
               <Key className="w-4 h-4 text-cyan-600" />
               <span>Indicators</span>
+            </NavLink>
+
+            <NavLink
+              to="/correlations"
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+                  isActive
+                    ? 'bg-cyan-50 text-slate-900 border border-cyan-400 font-bold shadow-sm'
+                    : 'text-slate-600 hover:text-teal-700 hover:bg-slate-100'
+                }`
+              }
+            >
+              <Network className="w-4 h-4 text-cyan-600" />
+              <span>Correlations</span>
             </NavLink>
           </nav>
 

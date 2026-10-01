@@ -9,7 +9,7 @@ export function Footer() {
           <Shield className="w-4 h-4 text-cyan-400" />
           <span className="text-white font-bold tracking-wider">Threat Stream CTI Platform</span>
           <span className="text-slate-600">|</span>
-          <span className="text-slate-400">AlienVault OTX Raw Ingestion Pipeline</span>
+          <span className="text-slate-400">Go · Kafka · HDFS · Spark · React</span>
         </div>
 
         {/* Pipeline Architecture Indicator */}

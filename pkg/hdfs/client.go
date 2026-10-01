@@ -3,12 +3,16 @@ package hdfs
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 )
+
+// ErrNotFound wraps any WebHDFS 404.
+var ErrNotFound = errors.New("hdfs: not found")
 
 type FileStatus struct {
 	PathSuffix string `json:"pathSuffix"`
@@ -92,7 +96,11 @@ func (c *Client) get(ctx context.Context, path, op string) (io.ReadCloser, error
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		defer resp.Body.Close()
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		return nil, fmt.Errorf("hdfs: %s %s failed: status=%d body=%s", op, path, resp.StatusCode, body)
+		err := fmt.Errorf("hdfs: %s %s failed: status=%d body=%s", op, path, resp.StatusCode, body)
+		if resp.StatusCode == http.StatusNotFound {
+			err = fmt.Errorf("%w: %w", ErrNotFound, err)
+		}
+		return nil, err
 	}
 	return resp.Body, nil
 }
