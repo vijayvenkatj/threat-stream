@@ -20,6 +20,9 @@ import {
   getTagsStats,
 } from '../api/stats';
 import { getPulses } from '../api/pulses';
+import { getCorrelationStats } from '../api/correlations';
+import { keyFindings } from '../lib/insights';
+import { PipelineStrip } from '../components/common/PipelineStrip';
 import { IndicatorTypeChart } from '../components/charts/IndicatorTypeChart';
 import { MalwareChart } from '../components/charts/MalwareChart';
 import { CountryChart } from '../components/charts/CountryChart';
@@ -37,12 +40,13 @@ export function Dashboard() {
   const [countriesData, setCountriesData] = useState([]);
   const [tagsData, setTagsData] = useState([]);
   const [recentPulses, setRecentPulses] = useState([]);
+  const [corr, setCorr] = useState(null);
 
   const loadDashboardData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [ovStats, typesRes, malwareRes, countriesRes, tagsRes, pulsesRes] =
+      const [ovStats, typesRes, malwareRes, countriesRes, tagsRes, pulsesRes, corrRes] =
         await Promise.all([
           getOverviewStats(),
           getIndicatorTypesStats(),
@@ -50,6 +54,7 @@ export function Dashboard() {
           getCountriesStats(),
           getTagsStats(),
           getPulses({ limit: 5, sortBy: 'created', order: 'desc' }),
+          getCorrelationStats().catch(() => null), // Spark output is optional
         ]);
 
       setStats(ovStats);
@@ -58,6 +63,7 @@ export function Dashboard() {
       setCountriesData(countriesRes);
       setTagsData(tagsRes);
       setRecentPulses(pulsesRes.data || []);
+      setCorr(corrRes);
     } catch (err) {
       console.error('Failed loading dashboard data:', err);
       setError(err.message || 'Failed to connect to threat intelligence service');
@@ -82,10 +88,10 @@ export function Dashboard() {
             </span>
           </div>
           <h1 className="text-2xl font-bold font-mono text-white flex items-center gap-2 tracking-tight">
-            Threat Intelligence Dashboard
+            Threat Intelligence Overview
           </h1>
           <p className="text-xs text-slate-300 font-sans mt-1 max-w-2xl leading-relaxed">
-            Real-time Cyber Threat Intelligence (CTI) aggregated from AlienVault OTX raw stream pipeline.
+            From raw AlienVault OTX feed to Spark-correlated threat categories: follow the data through the pipeline below.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -106,6 +112,28 @@ export function Dashboard() {
           <button onClick={loadDashboardData} className="underline font-bold text-rose-950">Retry</button>
         </div>
       )}
+
+      {/* The story: how far the data got through the pipeline */}
+      <PipelineStrip raw={stats?.total_pulses} correlated={corr?.available ? corr.pulses : null} />
+
+      {/* Key findings from Spark, when it has run */}
+      {keyFindings(corr).length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-bold font-mono text-slate-900">Key findings</h2>
+            <Link to="/correlations" className="text-xs font-mono font-bold text-cyan-800 hover:text-cyan-950">See all correlations →</Link>
+          </div>
+          <ul className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {keyFindings(corr).slice(0, 3).map((f) => (
+              <li key={f.text}>
+                <Link to={f.to} className="block h-full bg-[#0B1F33] hover:bg-[#071524] text-white text-sm rounded-xl p-4 shadow-navy-glow transition-colors">{f.text}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <h2 className="text-sm font-bold font-mono text-slate-900 -mb-4">What the raw feed contains</h2>
 
       {/* Metrics Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -295,7 +323,7 @@ export function Dashboard() {
                     <td className="py-3.5 px-4 text-slate-700 font-semibold">{pulse.author_name}</td>
                     <td className="py-3.5 px-4">
                       <span className="px-2.5 py-0.5 rounded bg-cyan-100 text-cyan-900 border border-cyan-300 font-bold">
-                        {pulse.indicators ? pulse.indicators.length : 0}
+                        {pulse.indicator_count ?? 0}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-slate-600">

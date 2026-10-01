@@ -1,11 +1,10 @@
-import { isUsingMockData, mockService, apiFetch } from './client';
+import { isUsingMockData, mockService, apiFetch, apiList } from './client';
 
 export async function getPulses(params = {}) {
   if (isUsingMockData()) {
     return mockService.getPulses(params);
   }
-  const queryString = new URLSearchParams(params).toString();
-  return apiFetch(`/api/pulses${queryString ? `?${queryString}` : ''}`);
+  return apiList('/api/pulses', params);
 }
 
 export async function getPulseById(id) {

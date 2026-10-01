@@ -1,11 +1,10 @@
-import { isUsingMockData, mockService, apiFetch } from './client';
+import { isUsingMockData, mockService, apiFetch, apiList } from './client';
 
 export async function getIndicators(params = {}) {
   if (isUsingMockData()) {
     return mockService.getIndicators(params);
   }
-  const queryString = new URLSearchParams(params).toString();
-  return apiFetch(`/api/indicators${queryString ? `?${queryString}` : ''}`);
+  return apiList('/api/indicators', params);
 }
 
 export async function getIndicatorById(id) {
