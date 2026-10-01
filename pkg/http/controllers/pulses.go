@@ -80,7 +80,7 @@ func (c *PulsesController) List(w http.ResponseWriter, r *http.Request) {
 	if sortField == "" {
 		sortField = "modified"
 	}
-	if !slices.Contains([]string{"modified", "created", "name"}, sortField) {
+	if !slices.Contains([]string{"modified", "created", "name", "indicators"}, sortField) {
 		writeError(w, http.StatusBadRequest, fmt.Sprintf("invalid sort: %q", sortField))
 		return
 	}
@@ -90,7 +90,22 @@ func (c *PulsesController) List(w http.ResponseWriter, r *http.Request) {
 	filtered := slices.Collect(query.Filter(slices.Values(pulses), preds...))
 	sortPulses(filtered, sortField, desc)
 
-	writeJSON(w, query.Paginate(filtered, page, limit))
+	// Rows drop the embedded indicators array: lists only need the count, and
+	// shipping thousands of IOCs per page is what made them slow.
+	p := query.Paginate(filtered, page, limit)
+	rows := make([]pulseRow, len(p.Data))
+	for i, pulse := range p.Data {
+		rows[i] = pulseRow{Pulse: pulse, IndicatorCount: len(pulse.Indicators)}
+	}
+	writeJSON(w, query.Page[pulseRow]{Data: rows, Page: p.Page, Limit: p.Limit, Total: p.Total})
+}
+
+// pulseRow is a pulse as listed: the outer nil Indicators shadows (and omits)
+// the embedded one.
+type pulseRow struct {
+	otx.Pulse
+	Indicators     []otx.Indicator `json:"indicators,omitempty"`
+	IndicatorCount int             `json:"indicator_count"`
 }
 
 // Get proxies OTX's pulse-detail endpoint, unshaped.
@@ -131,6 +146,12 @@ func pulseFilters(q url.Values) ([]func(otx.Pulse) bool, error) {
 		preds = append(preds, func(p otx.Pulse) bool { return strings.EqualFold(p.Adversary, adversary) })
 	}
 
+	if tag := q.Get("tag"); tag != "" {
+		preds = append(preds, func(p otx.Pulse) bool {
+			return slices.ContainsFunc(p.Tags, func(t string) bool { return strings.EqualFold(t, tag) })
+		})
+	}
+
 	if country := q.Get("country"); country != "" {
 		preds = append(preds, func(p otx.Pulse) bool {
 			return slices.ContainsFunc(p.TargetedCountries, func(c string) bool { return strings.EqualFold(c, country) })
@@ -144,6 +165,8 @@ func sortPulses(pulses []otx.Pulse, field string, desc bool) {
 	switch field {
 	case "name":
 		query.SortBy(pulses, func(p otx.Pulse) string { return strings.ToLower(p.Name) }, desc)
+	case "indicators":
+		query.SortBy(pulses, func(p otx.Pulse) int { return len(p.Indicators) }, desc)
 	case "created":
 		query.SortBy(pulses, func(p otx.Pulse) int64 { return timeKey(p.Created) }, desc)
 	default: // "modified"

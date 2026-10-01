@@ -16,6 +16,9 @@ import (
 // rawPulsesDir is where the Kafka Connect HDFS sink writes otx.pulses.
 const rawPulsesDir = "/data/raw/otx.pulses"
 
+// correlatedDir is where the Spark correlation jobs write their output.
+const correlatedDir = "/data/correlated"
+
 // cacheRefreshInterval bounds how stale search results can be.
 const cacheRefreshInterval = time.Minute
 
@@ -44,6 +47,7 @@ func main() {
 		controllers.NewPulsesController(cache, otxClient),
 		controllers.NewIndicatorsController(cache),
 		controllers.NewStatsController(cache),
+		controllers.NewCorrelationsController(store.NewCorrelationStore(fs, correlatedDir)),
 	)
 
 	log.Fatal(http.ListenAndServe(":"+cfg.Port, router))
